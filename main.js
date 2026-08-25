@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-    
-    // 1. Typed.js Initialization
+
+    // Typed.js
     const typedElement = document.querySelector(".typed-text");
-    if (typedElement) {
+
+    if (typedElement && typeof Typed !== "undefined") {
         new Typed(".typed-text", {
             strings: [
                 "Software Engineering Intern",
@@ -17,41 +18,45 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 2. Sticky Header Scroll Effect
+    // Sticky Header
     const header = document.querySelector(".header");
-    window.addEventListener("scroll", () => {
-        if (window.scrollY > 40) {
-            header.classList.add("scrolled");
-        } else {
-            header.classList.remove("scrolled");
-        }
-    });
 
-    // 3. Scroll Spy (Active Navigation Link Indicator)
+    if (header) {
+        window.addEventListener("scroll", () => {
+            header.classList.toggle("scrolled", window.scrollY > 40);
+        });
+    }
+
+    // Scroll Spy
     const sections = document.querySelectorAll("section");
     const navLinks = document.querySelectorAll(".navbar a");
 
     window.addEventListener("scroll", () => {
         let currentSectionId = "";
-        sections.forEach(sec => {
-            const secTop = sec.offsetTop - 160;
-            const secHeight = sec.offsetHeight;
-            if (window.scrollY >= secTop && window.scrollY < secTop + secHeight) {
-                currentSectionId = sec.getAttribute("id");
+
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 160;
+            const sectionHeight = section.offsetHeight;
+
+            if (
+                window.scrollY >= sectionTop &&
+                window.scrollY < sectionTop + sectionHeight
+            ) {
+                currentSectionId = section.id;
             }
         });
 
         if (currentSectionId) {
             navLinks.forEach(link => {
-                link.classList.remove("active");
-                if (link.getAttribute("href") === `#${currentSectionId}`) {
-                    link.classList.add("active");
-                }
+                link.classList.toggle(
+                    "active",
+                    link.getAttribute("href") === `#${currentSectionId}`
+                );
             });
         }
     });
 
-    // 4. Mobile Menu Toggling
+    // Mobile Menu
     const menuIcon = document.getElementById("menu-icon");
     const navbar = document.querySelector(".navbar");
 
@@ -61,7 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
             menuIcon.classList.toggle("bx-x");
         });
 
-        // Close menu when clicking link items
         navLinks.forEach(link => {
             link.addEventListener("click", () => {
                 navbar.classList.remove("active");
@@ -70,76 +74,71 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 5. Scroll Reveal Animation using IntersectionObserver
+    // Scroll Reveal
     const revealElements = document.querySelectorAll(".reveal");
-    const revealObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add("active");
-                observer.unobserve(entry.target);
+
+    if ("IntersectionObserver" in window) {
+        const revealObserver = new IntersectionObserver(
+            (entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("active");
+                        observer.unobserve(entry.target);
+                    }
+                });
+            },
+            {
+                threshold: 0.12,
+                rootMargin: "0px 0px -40px 0px"
             }
+        );
+
+        revealElements.forEach(element => {
+            revealObserver.observe(element);
         });
-    }, {
-        threshold: 0.12,
-        rootMargin: "0px 0px -40px 0px"
-    });
+    } else {
+        revealElements.forEach(element => {
+            element.classList.add("active");
+        });
+    }
 
-    revealElements.forEach(el => revealObserver.observe(el));
-
-    // 6. Contact Form Validation and Mock Submit
+    // Contact Form
     const contactForm = document.getElementById("contactForm");
-    const formMsg = document.getElementById("formMsg");
 
-    if (contactForm && formMsg) {
-        contactForm.addEventListener("submit", (e) => {
-            e.preventDefault();
+    if (contactForm) {
+        contactForm.addEventListener("submit", event => {
+            event.preventDefault();
 
             const name = document.getElementById("name").value.trim();
             const email = document.getElementById("email").value.trim();
             const subject = document.getElementById("subject").value.trim();
             const message = document.getElementById("message").value.trim();
 
-            // Reset message styles
-            formMsg.className = "form-message";
-            formMsg.innerText = "";
-            formMsg.style.display = "none";
-
-            // Basic Field Validation
             if (!name || !email || !subject || !message) {
-                formMsg.innerText = "Please fill in all fields.";
-                formMsg.className = "form-message error";
+                alert("Please fill in all fields.");
                 return;
             }
 
-            // Email Address Format Regex Validation
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
             if (!emailRegex.test(email)) {
-                formMsg.innerText = "Please enter a valid email address.";
-                formMsg.className = "form-message error";
+                alert("Please enter a valid email address.");
                 return;
             }
 
-            // Disable submit button and show sending feedback
-            const submitBtn = contactForm.querySelector("button[type='submit']");
-            const originalBtnText = submitBtn.innerText;
-            submitBtn.innerText = "Sending Message...";
-            submitBtn.disabled = true;
+            const recipient = "2k24.csaiml1b.2413391@gmail.com";
 
-            // Mocking API call with timeout delay
-            setTimeout(() => {
-                formMsg.innerText = "Thank you! Your message has been sent successfully.";
-                formMsg.className = "form-message success";
-                contactForm.reset();
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
+            const body =
+                `Name: ${name}\n` +
+                `Email: ${email}\n\n` +
+                `${message}`;
 
-                // Clear success message after 5 seconds
-                setTimeout(() => {
-                    formMsg.innerText = "";
-                    formMsg.className = "form-message";
-                }, 5000);
-            }, 1200);
+            const mailtoURL =
+                `mailto:${recipient}` +
+                `?subject=${encodeURIComponent(subject)}` +
+                `&body=${encodeURIComponent(body)}`;
+
+            window.location.href = mailtoURL;
         });
     }
-
 });
